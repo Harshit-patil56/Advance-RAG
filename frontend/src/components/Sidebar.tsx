@@ -141,14 +141,8 @@ export default function Sidebar({
                 transition: 'background-color 150ms ease-out',
               }}
             >
-              {d === 'finance' ? (
-                <BarChart2 size={18} aria-hidden="true" />
-              ) : d === 'law' ? (
-                <Scale size={18} aria-hidden="true" />
-              ) : (
-                <Globe2 size={18} aria-hidden="true" />
-              )}
-              {d === 'finance' ? 'Finance' : d === 'law' ? 'Law' : 'Global'}
+              <Globe2 size={18} aria-hidden="true" />
+              Global
             </button>
           );
         })}
