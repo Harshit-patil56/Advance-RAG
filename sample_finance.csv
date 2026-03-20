@@ -1,0 +1,21 @@
+transaction_date,amount,category,description
+2024-01-05,2500.00,Income,Salary
+2024-01-08,-120.50,Utilities,Electric Bill
+2024-01-12,-45.00,Food,Groceries
+2024-01-15,-1500.00,Rent,Monthly Apartment Rent
+2024-01-18,-35.00,Transport,Gas Station
+2024-01-22,-200.00,Entertainment,Concert Tickets
+2024-01-25,-85.00,Food,Restaurant Dinner
+2024-01-28,-60.00,Utilities,Internet Bill
+2024-02-05,2500.00,Income,Salary
+2024-02-09,-115.20,Utilities,Electric Bill
+2024-02-14,-150.00,Entertainment,Valentine's Dinner
+2024-02-15,-1500.00,Rent,Monthly Apartment Rent
+2024-02-20,-40.00,Transport,Gas Station
+2024-02-28,-60.00,Utilities,Internet Bill
+2024-03-05,2500.00,Income,Salary
+2024-03-10,-130.00,Utilities,Electric Bill
+2024-03-12,-95.00,Food,Groceries
+2024-03-15,-1500.00,Rent,Monthly Apartment Rent
+2024-03-22,-38.00,Transport,Gas Station
+2024-03-25,-120.00,Entertainment,Streaming Subs

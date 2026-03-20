@@ -1,0 +1,3651 @@
+If you've ever used clawed code to build
+
+an app, you've probably noticed that it
+
+doesn't just search your codebase. It
+
+explores it. It opens folders, it reads
+
+files, and then based on what it finds,
+
+it forms theories and then digs deeper.
+
+And it's an incredibly simple yet
+
+powerful retrieval mechanism. So why are
+
+we not using this approach when it comes
+
+to grounding AI agents in our private
+
+knowledge? Because typically knowledge
+
+bases rely on semantic search to find
+
+documents. However, as I've described in
+
+numerous videos on this channel, that
+
+approach has some major limitations. So,
+
+today I'm taking inspiration from how
+
+Claude Code retrieves information, and I
+
+use it to build a custom AI knowledge
+
+agent, one that can both explore and
+
+search your private data, and also
+
+decide which strategy is best to execute
+
+depending on the user's query. This is
+
+episode two in our live build series
+
+where we build out a full agentic rag
+
+app using cloud code. If you're building
+
+along, you can grab the planning docs in
+
+the GitHub repo linked below. But even
+
+if you're not, there's still plenty of
+
+value here. You'll see how
+
+explorationbased retrieval actually
+
+works. You'll also get to see an
+
+unfiltered raw view of building out a
+
+real web app using clawed code. This is
+
+my first time using the GSD framework,
+
+which is the get done framework.
+
+And if you're into these real world
+
+builds, not just building demos, but
+
+actual real world apps, then make sure
+
+to subscribe to our channel so you don't
+
+miss the next one. Okay, let's get into
+
+it. So how does cloud code actually
+
+search the codebase? Well, obviously
+
+cloud code is a CLI application. So it
+
+has an LLM operating within the command
+
+line and as well as that it has access
+
+to tools as well as to just general bash
+
+commands. The full list of tools are
+
+available on the settings.mmd file on
+
+the cloud code website as you can see
+
+here. But here are the main ones we
+
+really need to focus on. So the glob
+
+tool is first. This allows cloud code to
+
+find files by pattern. So for example
+
+here we can find all Python test files
+
+by providing these asterises and then
+
+test_aststeris.py.
+
+So anything that's within this kind of
+
+naming convention should be picked up by
+
+the tool. Then there's the GP tool. So
+
+this allows searches within files. So
+
+here for example you could find all
+
+examples of a pattern or a piece of text
+
+within a file. So here it's handle off
+
+but again you could have asteriskes or
+
+wild cards to match on other letters or
+
+words. Then there's the read tool which
+
+allows reading an entire file into
+
+context or particular line numbers of
+
+the file. And then outside of those
+
+three tools which handle the vast
+
+majority of navigation, you then have
+
+your bash tool. And this allows cloud
+
+code to execute arbitrary shell commands
+
+in the terminal. So for file system
+
+navigation, you're looking at list,
+
+changing directories, printing working
+
+directories, displaying the tree
+
+structure, locating files and
+
+directories using the find function. And
+
+then when reading files, it can output
+
+entire contents. It can check the top of
+
+a file, the bottom of the file, etc. And
+
+interestingly, cloud code does not use
+
+vector search. It does not use semantic
+
+search. It just relies on those core
+
+file search and navigation tools. So
+
+this begs the question, how does this
+
+work so well? Because it really does
+
+work very well for me. What's
+
+interesting is that the structure of the
+
+path of a file has a lot of information.
+
+Here for example you can see that the
+
+login form is in the authentication
+
+folder which is in a components folder
+
+of the source of the front end for
+
+example. So an LLM can tell a lot just
+
+from the path itself which then means
+
+you can form theories and then reason
+
+over the structure of the files and
+
+folders. So this iterative approach is
+
+incredibly effective and you can see
+
+cloud code burning 20 30 40 tool calls
+
+when it's working through a problem for
+
+example. So then when is exploration
+
+better than search? Well, clearly in
+
+code bases it makes a lot of sense as
+
+I've already mentioned, but semantic
+
+search generally would not perform well
+
+here because a lot of code files share
+
+identical patterns. They all have
+
+imports and exports and function
+
+definitions. And if you were looking for
+
+user authentication, for example, you
+
+may end up getting results back from
+
+tests, from documentation, from
+
+services, from controllers. Whereas
+
+using an exploration approach means you
+
+can get exactly where you want. But it's
+
+not just limited to code bases. There's
+
+lots of example use cases in general
+
+knowledge agents where it makes sense to
+
+explore as opposed to search. So if we
+
+take weekly reports for example here you
+
+might have a client folder. Within that
+
+there's years within that there's
+
+quarters. Within that there's months
+
+within that there's weeks. And each of
+
+these reports might follow the exact
+
+same template. executive summary, KPIs,
+
+blockers. So if you're using semantic
+
+search across this type of knowledge
+
+base, you might end up with near
+
+identical matches across these reports.
+
+And similar to the path of a code base
+
+making a lot of sense, the path of this
+
+type of knowledge base has a lot of
+
+information stacked into it. But there's
+
+other examples. Take legal or compliance
+
+for example. Here you might have a
+
+master services agreement, but there
+
+might be versions of the agreement. So
+
+if you were carrying out semantic
+
+search, you might be fetching older
+
+versions of the document and then
+
+suddenly using that as your ground truth
+
+when you're generating responses.
+
+Whereas if you were exploring this file
+
+system, you would immediately figure out
+
+that version two is the one you need,
+
+not version one. And just as weekly
+
+reports might have the same template,
+
+it's the same with precedents within the
+
+legal industry. These boilerplate
+
+documents are near identical with the
+
+exception of various changes. So a
+
+semantic search across them could again
+
+yield near identical results. Project
+
+management as another example. Again
+
+lots of different artifacts that are all
+
+boilerplate which again can result in
+
+poor retrieval. So then this all leads
+
+to the question about metadata. What
+
+about vector metadata? Because metadata
+
+filtering is a solution to this. For
+
+those previous examples, all of the
+
+chunks, all of those documents could
+
+have metadata tags. So you could have
+
+the client tag, you could have the year,
+
+the quarter, the week, the document
+
+type. And then when querying the
+
+knowledge base, you could pass those
+
+values in and narrow down the search to
+
+get exactly what you want. And that is
+
+very true. That is a solution to the
+
+problem. However, there are limitations
+
+to it. Metadata has to be created in the
+
+first place, but then maintained over
+
+the long run. It needs to be
+
+predictable, and your agent needs to be
+
+able to correctly construct the query.
+
+And an issue with metadata is it's
+
+somewhat invisible. A folder structure
+
+is quite obvious where a file sits
+
+within it. But metadata can have lots of
+
+different arbitrary values and a big
+
+problem is it fails silently. We've been
+
+designing rag systems for a long time
+
+and the amount of members that have had
+
+the problem where they're getting no
+
+results back from their vector store and
+
+it's normally because they're applying
+
+the wrong metadata filters. So that
+
+failing silently is a major problem. And
+
+not only that, but what if you don't
+
+know what you're looking for? you don't
+
+know what to tag with metadata.
+
+Exploration is brilliant for that
+
+because you can actually see what's
+
+there, reason over it, and make a
+
+decision on it. So metadata definitely
+
+works, but I think it works brilliantly
+
+if it's an automated tagging of metadata
+
+and you're dealing with some sort of
+
+high volume structured information. So
+
+in general, semantic search works great
+
+if it's meaningbased retrieval,
+
+particularly if you don't know the exact
+
+words you're looking for. It handles
+
+vague queries quite well. It's very fast
+
+at scale and depending on the embedding
+
+model that you use, it can be language
+
+agnostic. But as I already mentioned, it
+
+struggles very much with very similar
+
+content and there's no sense of recency
+
+or position. If you ask, give me the
+
+latest report. Without metadata
+
+filtering, it could fetch a report from
+
+5 years ago. It only returns chunks. So
+
+generally, you might need to expand out
+
+the context to get neighboring chunks,
+
+the full section, or even load the
+
+entire document up. So the best approach
+
+really depends on your use case. But in
+
+a lot of cases, a hybrid retrieval
+
+approach makes a lot of sense. Let the
+
+agent decide which retrieval mechanism
+
+to use. So, okay, let's take a step
+
+back. How can we actually build this?
+
+Well, one way to do it would be to use
+
+the claude co-work approach. With claude
+
+co-work, because it's a desktop app, you
+
+can just select the folder you want to
+
+give the LLM access to. And this works
+
+well because it is a desktop app. The
+
+user's files are sitting on their local
+
+machine. And the same as clawed code, it
+
+uses parameterized navigational tools
+
+like Glob or Grep or Vue. And then it
+
+has a sandboxed bash to use other Unix
+
+commands. For running remotely, though,
+
+it's a bit trickier. And I don't mean
+
+remotely as in the cloud, even if it's
+
+on a different server in your network.
+
+You would need to be able to sync your
+
+files and folders to that server or
+
+you'd need to install software on your
+
+server to have a bridge between the two.
+
+And with cloud co-work, there is no
+
+pre-processing. So you can't use OCR if
+
+you had scanned PDFs for example.
+
+Another approach is an MCP or an API
+
+approach. So if you already have a
+
+pre-existing knowledge base, you could
+
+connect your agent to it using these
+
+methods. So then it really depends on
+
+what MCP tools are available or what
+
+APIs are available for that piece of
+
+software. So if it's a Google Drive API
+
+or a SharePoint or a notion, you might
+
+have the equivalent of list GP, Glob,
+
+etc. But again, there's no
+
+pre-processing of files unless you
+
+pre-process before you upload them to
+
+those knowledge bases. So the approach
+
+I've taken in this video is building a
+
+custom knowledge base because we are
+
+building a web app here. So it will be
+
+living on a remote server either behind
+
+a firewall in a network or on a remote
+
+server in the cloud. And this approach
+
+works great for a multi-user web app.
+
+and we'll still be using these kind of
+
+parameterized navigational tools, but
+
+instead of shell commands, they'll
+
+actually be SQL and Python scripts. So,
+
+no bash is needed, which means it's
+
+going to be more secure. And it runs
+
+remotely by default. And we've also
+
+already built our pre-processing
+
+pipeline using Docklane. And we have
+
+user isolation in Subabase using role
+
+level security. So to take a helicopter
+
+view of our architecture, not much has
+
+changed since the last video. So we
+
+still have our code base in clawed code.
+
+I don't actually use cursor today but
+
+our front end is a react front end using
+
+vit typescript shaden and tailwind. Our
+
+back end is python fast api and
+
+docklane. And then we run two servers.
+
+We have a front-end server and a backend
+
+server. We can access everything in the
+
+web browser. And we have a database of
+
+superbase which also acts as our storage
+
+and o server. And then from an AI
+
+perspective I have local models set up
+
+here. So I have quen 330 billion but I
+
+also have cloud models as well. So the
+
+only change in this version is that
+
+we've deployed superbase locally. So
+
+I've used the self-hosted version of
+
+superbase which runs in docker
+
+containers and it means that you can run
+
+this entire system airgapped. Now if you
+
+are building along and you don't want to
+
+set up superbase locally that's totally
+
+fine. It's going to save you actually a
+
+lot of hassle because I ran into
+
+problems setting up MCPs. So by all
+
+means continue to use the cloud version
+
+if you want. But if you do want to set
+
+up Superbase locally, I'll leave a link
+
+for this documentation in the
+
+description below. So then from a web
+
+app perspective, we really have two
+
+major interfaces here. So this is what
+
+we had built by the end of the first
+
+video. So we have our chat threads, we
+
+have our general chat area, we have tool
+
+calls, there's one sub agent which is
+
+our analyze document sub aent and that's
+
+about it. So by the end of this video,
+
+we'll have upgraded this interface. So
+
+we'll now have the ability for this
+
+agent to explore the knowledge base. We
+
+have an additional sub agent called our
+
+explorer agent which is exactly the same
+
+as cloud code and that can call lots of
+
+different tools like listing and viewing
+
+and reading again similar to cloud code.
+
+And from a knowledgebased perspective at
+
+the end of the first video we had this
+
+very basic documents panel where you
+
+could just drag and drop in documents
+
+and they would be ingested and processed
+
+and metadata extracted. Whereas what we
+
+work towards today is the creation of
+
+this which is much more of a document
+
+management system essentially. We have
+
+our treel like folder structures. You
+
+can create new folders. We have our
+
+documents which you can drop in and then
+
+these can be shared globally across all
+
+user accounts or that can be specific to
+
+the actual user that's logged in. So we
+
+kick off this build from where we left
+
+off at the end of episode 1. If you'd
+
+like to build along, I'll leave a link
+
+for that video in the description below.
+
+or if you'd like to skip ahead and get
+
+straight into the build, the complete
+
+code base from episode 1 is available
+
+exclusively to members of our community,
+
+the AI Automators. Inside you'll find
+
+hundreds of builders, all creating
+
+production AI and rag systems. The link
+
+for that is also in the description
+
+below. I've created an isolated virtual
+
+machine where I can run clawed code
+
+using dangerously skip permissions. I
+
+didn't want to give it this much access
+
+on my main machine, so having a
+
+disposable VM is great. So, let's just
+
+kick it off. We'll connect and I have
+
+this set up. So it has VS code as an
+
+IDE. We have Docker desktop and
+
+obviously cloud code is installed and we
+
+have our agentic rag app here. And an
+
+important thing to note here is that
+
+while I have connected this to the
+
+GitHub repo, I have branch protection
+
+rules in place. So within the repo
+
+itself, I have a protection rule on the
+
+master branch which requires that any
+
+pull request is actually reviewed by
+
+another user. So, it's not able to
+
+approve its own pull requests and push
+
+to master because master is essentially
+
+our production environment. And for
+
+today's build, we're going to test out
+
+the GSD framework. I haven't actually
+
+used it before, but there's a huge
+
+amount of positive feedback in the
+
+community about it. It seems to have
+
+taken a lot of the good things from the
+
+likes of BMAD and OpenSpec and SpecKit,
+
+but created a much leaner scaffold to
+
+actually build out features. In the
+
+previous video, we went totally vanilla
+
+clawed code just to get started. But
+
+let's test this out today and if we're
+
+not impressed, we can just remove it for
+
+the next feature build. Okay, so to get
+
+started, just copy out this npx command
+
+and then let's uh drop it into a fresh
+
+terminal and let's go. So which runtime
+
+are we using? We're using cloud code. So
+
+it's number one. So let's install it
+
+locally in this project and we can have
+
+a look at the folder structure of it. So
+
+we have GSD under commands, lots of
+
+different slash commands there. We have
+
+sub agents and then there's the GSD
+
+folder with templates, references and
+
+workflows. So to kick off, we need to
+
+initialize the project. So if this was a
+
+totally fresh project, you can use this
+
+GSD new project/comand. Whereas we
+
+actually have a brown field site here.
+
+In the previous build, we created a
+
+version one of our agent rag app. So
+
+let's map the code base first with this
+
+command and it looks like it's spawning
+
+multiple mapping sub aents to actually
+
+figure out what this application is
+
+about. My terminal is kind of
+
+unresponsive here on VS Code. So I might
+
+open this up in a fresh terminal. You
+
+can see that the rendering is taking
+
+time to come through. I don't know is
+
+this because I'm running this in a VM or
+
+not, but I'll try this out in a in a
+
+separate terminal. We have plenty of
+
+space on our RAM and the CPU is okay. So
+
+we'll try it in PowerShell. Here we can
+
+see that these mapper agents are
+
+completing their tasks. And you can
+
+press Ctrl0 to expand out and have a
+
+preview of what they're doing, which is
+
+just a wall of JSON. And then just Ctrl
+
+O again just to toggle it off. Okay, so
+
+it's created the four documents and it's
+
+going to commit the codebase map. Cool.
+
+So let's have a look. So planning then
+
+we have our architecture file
+
+integrations the stack testing
+
+structure. So it has produced a pretty
+
+detailed codebase analysis. Let's see
+
+what it actually does with that now that
+
+it's completed it. So let's initialize
+
+the project which is the next command.
+
+And let's do this now in uh our terminal
+
+here just to see is it any faster. Yes,
+
+it's using the codebased map that was
+
+just generated. So on to the
+
+questioning. So this is the
+
+brainstorming stage where we can chat
+
+about the new phase or the new features
+
+that we want to build. So for this phase
+
+of the project, I want to replicate some
+
+of the core exploration features that
+
+clawed code has in my own rag
+
+application. And what I mean by that is
+
+I want our ingestion interface to have a
+
+nested folder structure. So people can
+
+create folders, subfolders and they can
+
+drop files into those. And then when it
+
+comes to the agent interrogating its
+
+knowledge base, it can use semantic
+
+search which is currently already in
+
+place or it can traverse the knowledge
+
+base exactly the same way that Claude
+
+code does. So some of the tools that I'd
+
+like to recreate here, Claude Code has
+
+the ability to list files in a folder
+
+ls. It would also be great to have a
+
+tool that can extract out a tree
+
+structure of the knowledge base so it
+
+can see all the various folder names.
+
+Now we need to be careful there around
+
+context window length and if it's a very
+
+large knowledge base there might be no
+
+space left in context. So outside of
+
+that tree structure and listing files in
+
+a folder cloud code makes a lot of use
+
+of the likes of gp and glob which is
+
+reject search and file pattern matching.
+
+It has the ability to read files and
+
+either read the entire file into context
+
+or based off particular line numbers.
+
+And finally cloud code has the explore
+
+sub agent. So it's possible to spin up a
+
+sub agent to actually carry out this
+
+detailed exploration and return with
+
+some interesting results. We've already
+
+built sub agents in phase one. So we
+
+could add another sub aent for this. And
+
+an interesting aspect of this system is
+
+that we are using superbase. So we are
+
+ingesting files into superbase. So all
+
+of these tools you know the list and the
+
+gp and the glob they should be
+
+interrogating the documents in superbase
+
+tables and the buckets within superbase
+
+as well. Now, we could attach a local
+
+folder that has a nested structure.
+
+However, if there's PDFs or docx or xlsx
+
+files, it's not going to be possible to
+
+carry out a very quick search of that.
+
+So, we still need ingestion where we can
+
+use docklane to extract out files into
+
+markdown. And that's then what we can
+
+search over. And that's the difference
+
+between searching a code base versus a
+
+knowledge base. To support all of this,
+
+then we're going to need a featurerich
+
+interface, an ingestion interface that
+
+has the ability to create folders,
+
+subfolders, and then when we drop in
+
+files, we're dropping them into a
+
+specific folder. And probably a phase
+
+two to this feature would be something
+
+like select a local folder and then it
+
+could programmatically load in
+
+everything from that folder and its
+
+subfolders. Let's not do that for this
+
+phase of the project because it'll over
+
+complicate things. Okay, so there's the
+
+transcript of our main requirements.
+
+I've just done it into a notepad file
+
+because I'm operating in a VM here and
+
+whisper flow doesn't work within the VM.
+
+So I've just pasted that in and let's
+
+kick it off. So my understanding of GSD
+
+at this part of the project is it's now
+
+going to go through a brainstorming
+
+phase where it asks lots of questions
+
+just to clarify the the vision. When the
+
+agent uses the GP glob read style tools,
+
+what exactly is it searching? So here
+
+I'm saying it is searching across the
+
+extracted markdown. So we need to figure
+
+out do we want to save a copy of the
+
+extracted text against the document and
+
+then independently we have the chunks
+
+that contain snippets of the document or
+
+do we just use the chunks and merge all
+
+of them together to recreate the
+
+markdown. And it's just throwing it back
+
+at me. Which one do I want to do? Yeah,
+
+let's store the full markdown separately
+
+to the chunked data. So, how deep should
+
+the folder nesting structure go? I think
+
+unlimited. It's like a real file system.
+
+So, yeah, unlimited. Are folders per
+
+user or shared? Good question. I think
+
+they're per user. Each user has their
+
+own folder tree because we already have
+
+role level security set up on Superbase.
+
+Oh, hang on. Now, thinking about this
+
+more, does it make sense that the user
+
+can only interrogate their own
+
+knowledge? Actually, this folder scope
+
+question is quite complicated. So
+
+currently the user logs into the app,
+
+they upload files and then they're
+
+chatting to their files essentially
+
+because we have role level security set
+
+up. I can imagine you might want to
+
+upload only your own files that you can
+
+chat to. And there might be something in
+
+the middle like teams for example. And
+
+it's worth not over complicating this as
+
+well. So maybe we'll just go with global
+
+and per user. And then the teams can be
+
+a layer that we add in after because
+
+that adds in a whole level of complexity
+
+around groupings for example and then
+
+permissions ACL structures around
+
+groupings. Cool. So we have global
+
+folders which are visible to everyone
+
+and then per user folders private to the
+
+individual user. So I am impressed by
+
+this brainstorming phase so far because
+
+if I was specking this out I might not
+
+put a lot of detail around the access
+
+controls around the folders and this
+
+really is critical to the architecture.
+
+So this is a good process so far. How
+
+should we handle large knowledge bases
+
+with tree structures? So I assume this
+
+is the tool call of the agent. If it's
+
+looking for a tree structure of a
+
+particular section of the knowledge
+
+base, how deep does it go? How many
+
+items does it show? So I think we
+
+probably need max depth and truncation.
+
+So it's not going to go a thousand
+
+folders deep, nor is it going to show
+
+10,000 files in a single folder. So we
+
+probably need both strategies. So, how
+
+should the read tool work with the
+
+extracted markdown? And now, in the last
+
+video, we did create a sub agent that
+
+can actually pull in an entire document
+
+into its context window. So, I might
+
+just mention that. And I think ideally
+
+this retool should be able to pull just
+
+a chunk of the document or the entire
+
+document. Now, in a future video, we
+
+might go through LLM extraction of the
+
+structure of a document, which would
+
+make this more intelligent, but for the
+
+moment, let's just go with an arbitrary
+
+line range. Perhaps add a new line to
+
+avoid splitting words. Okay, so on to
+
+the next tools. Should GP search across
+
+all documents or within a folder path?
+
+So this is the reax search over the file
+
+contents. I think you need to give both
+
+options really. That's generally the way
+
+it is with cloud code. It can just
+
+search across everything or choose a
+
+folder. And then what should GP return?
+
+I might go with document list only. My
+
+fear would be if it grabs the
+
+surrounding context, it might not see
+
+the full picture. I would prefer if a
+
+sub agent loaded up the entire file or
+
+once we implement markdown structure
+
+extraction we could grab that section
+
+for example. So the explorer sub aent
+
+you mentioned spinning up a sub aent do
+
+a detail exploration and return. So what
+
+should it be able to do? So I think all
+
+knowledgebased tools plus our uh
+
+document analysis sub aent that way it
+
+can load up an entire document. So what
+
+folder operations does the UI need? It
+
+needs create, rename, and delete. It
+
+needs the ability to move files between
+
+folders. Yeah, ideally it can move
+
+entire folders. It's just a path
+
+reference. So, how should global versus
+
+per user folders appear in the
+
+interface? I think just a visual
+
+indicator, just an icon, basically.
+
+Okay. So, are we ready to create our
+
+project MD? Yeah, let's do it. So,
+
+overall, I think that was quite a good
+
+brainstorming session. We covered a lot
+
+there that we probably would have
+
+tripped up on if we didn't actually get
+
+into that. Okay, so how do we want to
+
+work? Uh, yolo mode, definitely. We're
+
+in a VM. Altero should planning be ship
+
+fast. Standard or comprehensive? Let's
+
+go standard. Execution run plans in
+
+parallel. Yeah, independent plans run
+
+simultaneously. That's fine by me. Now,
+
+actually, I do think that if it goes
+
+sequential, it might be better, but
+
+let's try it in parallel. Get tracking.
+
+Commit planning docs to git. Yes. Yeah,
+
+let's do that. And let's submit. So,
+
+research before planning each phase.
+
+Yeah, let's do that. Model profile.
+
+Let's go with obus. Um, and let's just
+
+see how we work through the budget. I
+
+think generally speaking, if you use
+
+Opus 4.5 for everything, it's going to
+
+cost a little bit more, but there's
+
+going to be less iterations. So, in the
+
+long run, it might actually cost less.
+
+So, research the domain ecosystem before
+
+defining requirements. Think we'll skip
+
+this because I think we've already well
+
+documented it. So, which folder features
+
+are in version one? Yeah, these are all
+
+in version one. So, it's broken this
+
+phase of the project down into five
+
+distinct plans. So there's the folder
+
+structure plan, the document management
+
+plan, the knowledgebased exploration
+
+plan, my explorer sub agent, and then
+
+the ingestion UI. So now it's just going
+
+through to clarify which features do I
+
+want in this phase. Okay, so it's
+
+generating the full requirements
+
+document. Now, it's really so important
+
+that you go through this planning stage
+
+and take your time while you do it
+
+because if you send it slightly off
+
+track at this point, it's going to be 10
+
+times harder to unwind a mess of code
+
+later on. Cool. So here are the
+
+requirements. So happy to proceed with
+
+that. And now we're creating the road
+
+map which I assume is going to show what
+
+can be worked on in parallel or needs to
+
+be done sequentially. And here's our
+
+proposed road map. So seven phases
+
+creating the folder schema and the core
+
+APIs document folder ingestion the UI
+
+navigation tools search read and
+
+explore. And then here are the and we
+
+have our requirements mapped. Cool.
+
+Let's do it. And before we go any
+
+further I'm just going to set my env
+
+file. And this is a fresh clone of the
+
+repo. So I don't have anything set here
+
+and as I'm running superbase locally
+
+I'll be able to drop all of this in.
+
+Right, let's kick off phase one now that
+
+I have the env set. So it's proposing
+
+that we do GSD discuss phase and then we
+
+put in the number of the phase which is
+
+number one. It's saying that you can
+
+skip that if you want to just go
+
+straight into the plan phase. Let's just
+
+do discuss phase for the first one and
+
+let's see is there anything left to
+
+discuss. And we're at the 45% mark in
+
+our context window as well. So, I
+
+possibly should have cleared that down.
+
+Let's see how far we get. And actually,
+
+let's back out of that. Let's ask him
+
+just more questions. And I'm happy for
+
+Claude to fill in the gaps. And then
+
+let's trigger the GSD plan phase one.
+
+So, plan phase one. So, it really is a
+
+top- down approach. Things are just
+
+getting more and more into focus in
+
+terms of the features that you're
+
+looking to build. You know, it starts
+
+with the highle epics. Then it's going
+
+into the features into the acceptance
+
+criteria essentially. Okay. So, our
+
+plans are complete and let's have a look
+
+at the various documents. So we have our
+
+general research.mmd for this phase and
+
+these can't be done in parallel. So this
+
+is wave one and this is wave two. Nice.
+
+So we have our tasks within each of
+
+these subfases and then we have the
+
+verification of those. Okay, I think
+
+we're ready to go. Let's clear down and
+
+then let's execute phase one.
+
+Okay, so action required. It can't
+
+access superbase locally here. Let's try
+
+to set up the superbase MCP. I think the
+
+Superbase CLI is a little bit limited if
+
+you're using the Docker Compose setup of
+
+local Superbase, which is what I'm
+
+doing. And it looks like we have a clash
+
+of ports because Superbase uses port
+
+8000 to access the Superbase dashboard,
+
+whereas our app also uses port 8,000.
+
+So, they're just changing it to port
+
+801. Okay, I think this is now going to
+
+work. It was using the demo service ro
+
+key instead of the actual one. So, let's
+
+exit and come back in and then do /mcp.
+
+No, it's still failing. Okay, I had a
+
+long back and forth with cloud code on
+
+trying to get this Superbase MCP server
+
+up and running. I needed to make some
+
+changes to the Kong YAML file of the
+
+Superbase project. And so essentially I
+
+needed to enable access locally to the
+
+MCP. So that was done in the Superbase
+
+project volumes API Kong YAML. This is a
+
+different project to the agentic rag
+
+project that I'm on. So I have these set
+
+up as two separate folders and I've done
+
+the docker compose up on the superbase
+
+project and that's why you see
+
+everything here in terms of the the
+
+superbase containers and now cloud code
+
+is able to actually interact with it. So
+
+it should now be able to push these
+
+migrations and we can test out the end
+
+of phase one. I'm just asking cloud code
+
+to look at everything we've discussed
+
+here and make a note in the cloud MD
+
+file to speak to the fact that we're
+
+using a local superbase hosted system
+
+that the MCP is now available and also
+
+even note the path of the full superbase
+
+project if it needs to dive in and
+
+actually review anything. Okay, so we
+
+got pretty sidetracked there. Let's just
+
+check where we are on this project. So
+
+there is a GSD resume work command that
+
+resumes work from a previous session. Um
+
+so let's trigger that and it should pick
+
+up where it left off. Cool. So it's
+
+detected the incomplete work. Planning
+
+has been done. Now I did think it
+
+actually progressed through this. It
+
+doesn't seem to be picking that up.
+
+Yeah. So it is picking up the migration
+
+file was created. Cool. Actually I'll
+
+interrupt it here. Yeah, this is a
+
+completely fresh install of the project.
+
+So there's nothing in Superbase right
+
+now. So we need to apply all of the
+
+migrations from the previous build.
+
+Okay, that MCP is working anyway. We now
+
+are getting our tables through. And
+
+there's the chunks table and the
+
+documents table. We could probably set
+
+up a script to actually do all of this.
+
+Currently, it's just the agent actually
+
+triggering these manually. So, we
+
+definitely could do a script for this,
+
+but let's leave it for the moment. Okay,
+
+so we now have our folders table. So,
+
+this is obviously a key part of this
+
+entire feature set. Okay, let's go with
+
+the execute plan 1.2. And in the
+
+meantime, let's actually spin up a user
+
+here. So with authentication, we create
+
+a new user. Now, we did have test users,
+
+didn't we? Set up in this project. Yeah,
+
+here we go. Test.com.
+
+And for some reason, I'm getting an
+
+error message with that. I'll pass this
+
+to cloud code in a second. I'll let it
+
+finish what it's doing. Cool. So, the
+
+folders are working. Phases 1.1 and 1.2
+
+are now complete, and it's creating a
+
+summary. And we definitely need to start
+
+a fresh context window because we are
+
+way too high here. Cool. Let's go with
+
+plan phase two. So phase two is our
+
+document folder integration. I'm still
+
+having issues creating users and
+
+subbase. So I'm going to use the GSD
+
+debug command which talks about how it
+
+systematically debugs with the
+
+persistent state. So GSD debug and the
+
+issue is I cannot create users on the
+
+superbase off screen even though I've
+
+restarted all of the containers. So the
+
+phase 2 plan is still working away. So
+
+I've moved it to a background task and
+
+now I'll be able to free up the agent to
+
+do this. Okay. So plans are created.
+
+Confidence is high in this one. The
+
+document folder relationships folder
+
+move operations with cycle detection
+
+full markdown storage. So it's all tied
+
+to this folder ID. Moving a document is
+
+simply updating its folder ID. And then
+
+changing the location of the folder is
+
+changing the parent ID of the folder. So
+
+that's all fine. And then full markdown
+
+storage during ingestion. That makes
+
+sense. and then upload with optional
+
+folder targeting. Okay, so let's execute
+
+phase two now that that issue has been
+
+resolved and this is our front end. So
+
+we are able to log in now. So currently
+
+this is the documents UI that we built
+
+in the previous video. So we should
+
+start seeing some changes here around
+
+the folder structures where you can drag
+
+in files. Cool. I'll let this one run.
+
+Okay, so phase 2 build and verification
+
+is complete. Let's just have a quick
+
+look at the Swagger documentation. So
+
+this phase is a fully backend phase. So
+
+there's still nothing on the front end.
+
+That's phase three. But we now have our
+
+backend APIs to trigger the creation of
+
+folders, listing folders, getting,
+
+updating, deleting. So CRUD basically,
+
+we are right at the edge of our contacts
+
+window here. We probably shouldn't have
+
+let it go this high. So I'll definitely
+
+clear this down and let's kick off phase
+
+three. And because the discussions are
+
+very much complete, I think at this
+
+point, I'm just going to jump straight
+
+into the planning phase. And I also
+
+could carry out manual acceptance
+
+testing of phase 2, but instead I'm
+
+going to do it at the end of phase three
+
+where there's an actual UI I can
+
+interact with. So GSD plan phase three
+
+and let's go. Yeah, I must say it is a
+
+nice scaffold this. The various markdown
+
+files do make a lot of sense and they
+
+are being updated as well. There's
+
+always the threat, I think, when you're
+
+dealing with an AI or an LLM that it'll
+
+create a markdown file and then it'll
+
+just forget about it and never update it
+
+again. And you'll have all of these kind
+
+of orphan markdown files, whereas at
+
+least like the road map document is
+
+continually being updated. The state of
+
+play is continually being updated. You
+
+can see the global progress of this
+
+project. So, yeah, it does make a lot of
+
+sense. It's funny that it talks about
+
+how it's much lighter than BMAD or
+
+SpecKit on documentation. There's plenty
+
+of documentation. There's no lack of it,
+
+but obviously it's a lot leaner and a
+
+bit more kind of to the point than some
+
+of those other systems that are trying
+
+to model real world software engineering
+
+teams. Okay, planning is complete. So, a
+
+react folder tree UI with shad CN UI
+
+uses the existing ingestion page. APIs
+
+are already in place. So, just front end
+
+implementation customuilt tree view
+
+component. There are third party
+
+libraries it mentions that it's decided
+
+not to use. Yeah, let's go with this and
+
+let's see how it turns out. If it
+
+doesn't work that well, we can always
+
+look at some of the third party
+
+libraries. Execute phase 3. So, let's
+
+clear this down and then GSD execute
+
+phase 3. All right. So, just carrying
+
+out some manual tests here. Um, so the
+
+folder creation is fine. If I can't
+
+create a folder of the same name, which
+
+is probably good. We just need an error
+
+message. So, I'll make a note of that.
+
+When you right click and select new
+
+subfolder, we need the browser to focus
+
+on the field so that when you start
+
+typing, it'll type in straight away.
+
+Currently, I press it and I start typing
+
+and nothing happens because that field
+
+is not in focus. Just making some notes
+
+here. And let's just get some uh test
+
+files we can use. There's a test PDF
+
+file. Does this have Microsoft Word? It
+
+doesn't. We'll just call this test.ext.
+
+Okay. So, you can see that's appearing
+
+there. Okay. So, embedding's not
+
+configured. So we'll just set open
+
+router for this. I'll just choose the
+
+text embeddings three small for the
+
+minute. Now I do have local models I
+
+could use for all of these as well, but
+
+just for the course of testing, we'll
+
+just use these cloud models. Okay,
+
+getting an error there. Failed to fetch.
+
+And looks like it's been blocked by a
+
+corores policy. I'll just copy those
+
+out. I'm getting these errors when I try
+
+to save the settings file in an admin
+
+account. Can you have a look at these?
+
+Now I've installed Versel's agent
+
+browser for automated browser testing.
+
+In the last phase, I was using Playrs
+
+MCP, but now that I'm setting this up in
+
+the local machine, for whatever reason,
+
+I can't install it. And it might just be
+
+a good time to move to the Verscell
+
+agent browser, which I do think is more
+
+accurate at browser testing. So, it is
+
+now working. And I'll just say, can you
+
+update our claw MD and any other
+
+references to playright to use this
+
+instead for UI verification? I don't
+
+really like how this is all displayed.
+
+Like the folder structure, the tree
+
+structure in here, it's not the
+
+prettiest. That being said, we can do a
+
+job on actually updating all of the
+
+styles and making them kind of more
+
+impressive later on. It's worth just
+
+getting the core functionality in place.
+
+So, while those two claw sessions are
+
+working away at fixing those issues, I
+
+might get going on planning the next
+
+phase. And if we take a look at our
+
+backlog, let's see where we are at. So,
+
+here's our road map. Phase one and two
+
+are done. Phase three is in progress.
+
+Phase four, navigational tools. So,
+
+probably no need to research on this
+
+one. Let's just crack straight into
+
+planning it. So we'll do uh /gsd plan
+
+phase and then phase 4. Now these three
+
+issues have been fixed. So let's have a
+
+look. That's fine. Um I haven't said
+
+anything. So let's go with that one.
+
+There's the API key. That's the
+
+embeddings. And this is co here. So even
+
+with all of that saved, um it's not
+
+working. Okay, let's have a look at
+
+console. Just clear and save. Just
+
+another internal server error.
+
+Essentially settings still not working.
+
+Different error. Encryption key is not
+
+set properly. Where is my encryption
+
+key? This is in my MV file. My backend
+
+one, should I say? Ah, yeah, your fet
+
+key. Oh my god, it's actually made the
+
+code gracefully fall back to storing API
+
+keys unencrypted.
+
+No, don't do that. User should set the
+
+keys or just show a better error message
+
+clearly. Okay, in the meantime, I'll
+
+just uh pick some random characters
+
+here. That looks like a good key. Well,
+
+actually, what is this fernet key? Okay,
+
+so it must be a 32 character URL safe
+
+base 64 encoded key and generate one
+
+with this script. So we need to create a
+
+helper script to do this. We can't have
+
+this conversation every time. Okay, so
+
+there's our generated key. Obviously
+
+Cloud can see this but um it won't be
+
+doing it normally because we will have
+
+the script that we can run directly in
+
+terminal for the moment. We just drop it
+
+in there. Now let's restart everything.
+
+Excellent. Settings are saving. So we
+
+can now set our keys. So then back into
+
+documents and let's get rid of these two
+
+documents that didn't correctly embed
+
+and let's upload them again. Excellent.
+
+Okay. Now where do we upload them? We
+
+just uploaded them directly into the
+
+root. Yeah. This is what I mean by maybe
+
+we should have used a library for this.
+
+We're going to have to end up building a
+
+lot of features. It's not very user
+
+friendly here. Yeah. So I think there's
+
+some improvements we need on this that
+
+we probably need to do straight away.
+
+When you click on a folder, this view
+
+should update to show you what's in that
+
+folder. You should probably have a
+
+breadcrumb trail which shows that you
+
+are five levels deep in a specific
+
+folder structure and then the documents
+
+panel itself like we need a grid or a
+
+list that's filterable and sortable and
+
+currently the details shows as this kind
+
+of uh drop-down if we bring in this PDF
+
+here. So you see this drop-down showing
+
+maybe this needs to be a right hand side
+
+panel maybe a popup possibly you need to
+
+see a preview of it as well. So we're
+
+kind of getting into the design of a
+
+document management system essentially.
+
+So GSD has this quick command where it
+
+doesn't go through the full project life
+
+cycle of phase and then plan build
+
+verify. I might try to make some UI
+
+changes using this quick command and
+
+let's see how it goes. I've cleared down
+
+the session here. So can you make some
+
+front-end changes for me? Okay, let's
+
+see how it progresses with that and in
+
+the meantime let's have a look at phase
+
+4. So phase four navigational tools. So
+
+these are the tools that the rag agent
+
+will be able to trigger to fetch the
+
+list of folders of documents searching
+
+grepping etc. So we have two
+
+navigational tools there's list and tree
+
+and then for the tree traversal that's a
+
+recursive CTE. Now I do wonder how this
+
+is going to be in performance terms. So
+
+that is something that we're just going
+
+to need to check out. If you have very
+
+deep trees um we might run into issues.
+
+Yeah, it even talks about a pitfall 2
+
+unbounded tree queries can return
+
+massive results. So, enforce depth
+
+limits. Perfect. Cool. Yeah, I'm happy
+
+to go with that. So, let's just do GST
+
+execute phase. And that's phase 4. And
+
+interestingly, for this quick command,
+
+it has actually generated a small plan,
+
+which is good because it's probably too
+
+many changes here for it to execute
+
+without really thinking about it. So,
+
+good to see that it's done a plan. So,
+
+quick plan is folder navigation. Now, is
+
+this here somewhere? Oh, it is. Yeah,
+
+quick. And there's the plan. Add Google
+
+Drive style folder navigation to the
+
+documents page. In the meantime, I might
+
+install the front end anthropic skill
+
+just to try to see can we improve the
+
+appearance of this. This is a great
+
+website actually, skills.sh.
+
+It has lots of skills that you can use
+
+and you can see them and they're sorted
+
+by the most popular ones as well. So,
+
+you know, React best practices. This is
+
+the front-end design skill I'm talking
+
+about here. Agent browser we've already
+
+installed. So, let me just grab this
+
+one. There is an MPX that you can use.
+
+So let's install that. And where do we
+
+want to uh install it? Um let's install
+
+it globally. Cool. Front end design. So
+
+create distinctive production grade
+
+front end interfaces with high quality
+
+design. So those front end changes have
+
+been made. Um now when you click on the
+
+folders, we can see that we are actually
+
+in the folders and we have a breadcrumb
+
+trail as well to kind of work our way
+
+back out. So that's good. Now it didn't
+
+really follow everything that I wanted
+
+to do. So for example, I can't see the
+
+folders. Okay. So here we have some test
+
+files. So if I upload say three. Yeah.
+
+So we don't have sorting and filters nor
+
+can we see the subfolders within this
+
+folder. So I might just grab a
+
+screenshot of that and I'll drop that
+
+into this as well. So uh GSD quick paste
+
+that in. So we still need to improve
+
+this. As you can see in the attached
+
+image I'm in folder 2. So I should see
+
+folders three, four, and five within the
+
+main interface. I would also like to see
+
+a grid of cards to represent the
+
+documents similar to the screenshot
+
+attached. So I've just grabbed a Google
+
+Drive screenshot. Our navigational tools
+
+are complete now. So let's just check to
+
+see can it list all of the folders.
+
+Okay. So it doesn't have tools
+
+available. So here we have our Langsmith
+
+trace. So this is the can you list all
+
+folders in the knowledge base. So we can
+
+see that there's search documents,
+
+analyze document and query sales
+
+database from the last phase of the
+
+project. So, we don't actually have the
+
+tool. It hasn't been added, it seems,
+
+nor has it been added to the system
+
+prompt. So, I'll check with claw to see
+
+uh what's going on. Has that been
+
+implemented yet. So, that was supposed
+
+to be done in this phase. Oh, I just
+
+need to restart the back end. Okay. So,
+
+try it again. Excellent. There we go.
+
+So, it can list path root and it gives
+
+the folders. Excellent. And then if we
+
+come into lang. Yeah, ls has been
+
+called. So, it either accepts root or it
+
+accepts a folder. UYU ID from a previous
+
+ls or tree result and it just passed
+
+root. Okay, so let's ask for a tree
+
+structure. Okay. Yeah, also passed the
+
+root and there you go. So you have the
+
+nested folders and the files. Brilliant.
+
+So that is phase four verified. So let's
+
+move on to planning phase five. So let's
+
+clear this down. We'll kick off the
+
+planning for that. For some reason it
+
+has Solid 4.5 working on the front end
+
+changes. I would prefer if it was Opus,
+
+but let's see how far it gets. Okay, so
+
+that has been resolved and we are seeing
+
+our folders. We do have filters as well.
+
+I think we're kind of missing the files.
+
+I thought I did upload some files here.
+
+Document uploaded and processing. Yeah,
+
+the files aren't showing. We definitely
+
+have documents. Yeah, we really need to
+
+get a verification loop up and running
+
+here cuz I'm just spinning my wheels on
+
+testing this when it really should be
+
+testing it itself. Okay, phase five is
+
+planned. Yeah, like this planning is
+
+taking 10 minutes. For example, it has
+
+outputed two plans. LMA agent tools for
+
+content search which is GP and file in
+
+pattern matching which is Glob. Yeah,
+
+like it's it's it's incredibly detailed.
+
+I just do wonder do we need to go to
+
+such an extent like this research plan
+
+is 600 lines long and then we have two
+
+more plans which are another 200 lines
+
+long. So yeah, I do wonder would you be
+
+better off using the vanilla plan mode?
+
+Arguably, it's hard to know because I
+
+haven't done that in this session, but I
+
+had a lot of success using the vanilla
+
+plan mode in the last video. Anyh who,
+
+let's clear it down and we'll execute
+
+this phase. Let's execute phase 5. And
+
+thinking about it, it asked me at the
+
+very start, did I want a quick
+
+implementation, a standard, or a really
+
+long one. I selected standard. Maybe I
+
+should have gone for the quick
+
+implementation, and that would have
+
+resulted in me less artifacts, less time
+
+spent on planning and researching. Okay,
+
+I'm going to give this front-end skills
+
+a go and let's see how it progresses.
+
+So, front end design skill and let's see
+
+does it bring me through questions and
+
+answers or how does it work. I'd like
+
+you to redesign the front end of this
+
+app. I don't want you to add any new
+
+features. I don't want you to add any
+
+new text or anything like that. Just
+
+update the stylings. I would like it to
+
+be modern and polished and perhaps we
+
+should be defaulting to the dark mode
+
+which is enabled. Okay. So, let's see
+
+how far we get with this. Cool. So, it's
+
+going to propose a design direction. So,
+
+we'll let it do that while I check to
+
+see where we're at on the other tabs.
+
+So, we're building out phase 5 at the
+
+moment. There's a bug in the documents
+
+that are not showing. So, it looks like
+
+it's fixed that. Okay. Yeah. So, our
+
+redesign is taking place as we speak and
+
+our documents are showing again, which
+
+is nice to see. Okay. So, phase five is
+
+finished. So these are the search tools
+
+which is our GP which is searching
+
+across the files and glob which is
+
+searching across the file names. So
+
+while I test that out I'm going to start
+
+off the planning for phase six which is
+
+the read tool and I might just start the
+
+phase 7 planning as well cuz it is it
+
+can be done in parallel. So plan phase
+
+six and then here we'll plan phase 7 and
+
+at that point then we'll have finished
+
+this epic and our front end design is
+
+looking nice. So let's test out the GP
+
+and the glob. So let's look for uh the
+
+coding standards for example. So can you
+
+check to see if there's a document on
+
+coding standards? So document search it
+
+used document search. Which tool is
+
+that? Let's check langsmith. Oh that's
+
+the search documents. That's the
+
+semantic search actually. Now that would
+
+suggest the tool is oh so it used the
+
+search documents as opposed to the Yeah,
+
+you can see them there. There's ls tree
+
+gp and glob. So I'll just instruct it to
+
+use glob for the for the moment. We'll
+
+get into the actual system prompting of
+
+the agent once we have all the tools in
+
+place. And it worked. So there's pattern
+
+coding standards, folder one, folder
+
+two, folder three. There's coding
+
+standards. Excellent. And now it hasn't
+
+opened it up because we haven't
+
+implemented the view yet. That's
+
+currently what's being planned out,
+
+which is phase six. It's kind of a
+
+strange loading glimmer. It must be what
+
+the front end design skill has added.
+
+It's a little bit distracting, actually.
+
+Let me try light mode. So this is light
+
+mode and we're also missing our
+
+metadata. There's a little bit of
+
+metadata there, but I think we had a lot
+
+more metadata. Let me just check the
+
+metadata of these documents in the
+
+database. Coding standards. Yeah,
+
+there's the topics. There's the summary,
+
+language, document type. So the metadata
+
+is there, but for whatever reason, it's
+
+not showing up. So I'll just get it to
+
+make a few more changes. Okay, phase six
+
+is planned and phase 7 is nearly
+
+finished. So here's phase six. So in a
+
+nutshell, we're going to implement the
+
+read tool which can retrieve the full
+
+document content or specific line ranges
+
+from the knowledge base. And this
+
+completes the claw code inspired tool
+
+set. So straightforward implementation
+
+probably didn't even need a plan. So the
+
+key design decision is how to handle
+
+line range requests. Okay. Yeah, let's
+
+give that a go. So let's clear and then
+
+let's execute phase six. Now phase 7 is
+
+has successfully been planned. However,
+
+it's saying that it's blocked because
+
+phase 6 is not complete and it does rely
+
+on phase 6. So let's leave that for a
+
+second and in the meantime we can have a
+
+look at that plan. So phase 7 implements
+
+an explorer sub agent that orchestrates
+
+the knowledgebased exploration for
+
+complex research tasks. So it follows
+
+the existing sub aent service. That's
+
+good. So the big question here is what
+
+about sub agent calling a sub agent? How
+
+do we feel about that? Yeah, explorer
+
+can invoke the existing analyze document
+
+sub aent for deep document analysis. The
+
+question then is how is that rendered on
+
+the front end and then trying to avoid
+
+an infinite exploration loop. So
+
+enforcing the max rounds limit. Okay,
+
+that's good. Okay, so this is starting
+
+to look a little bit more like what I
+
+had in mind. We have our subfolders
+
+depending on where we are in the
+
+knowledge base. And then if you click on
+
+it, everything underneath uh updates and
+
+essentially you can go backwards by
+
+hitting the breadcrumb trail. So I think
+
+that probably needs to be bigger really.
+
+Still don't have our metadata. So we can
+
+work on that. Yeah, this is looking
+
+pretty good now. And then if we try to
+
+upload a file. Okay. Yeah, we just have
+
+our standard popup. Let's drop another
+
+test file in. I think if you're in the
+
+root like I am here, you should see all
+
+of the top level folders. So I should
+
+see these five folders here. That does
+
+work when you get to here. So if I click
+
+folder one, I can see what's underneath.
+
+If I click folder two, I can see the
+
+folders underneath plus the files. So we
+
+just don't have that at the very root.
+
+Okay. So phase six is finished.
+
+And let's uh test it out. Can you use
+
+the read tool to find out info on the
+
+coding standards? And there you go.
+
+Yeah, that worked. So, it did document
+
+search, which is semantic search. It
+
+then did the glob to find the file name.
+
+Then it called the read tool. A mish
+
+mash of techniques, but that's fine.
+
+We're just testing to see is it actually
+
+working. Okay, so let's now trigger our
+
+phase 7. Oh no, I need to clear down the
+
+session actually. Yep. So that's
+
+executing phase 7 and uh we are done
+
+here in effect. Now that has made my
+
+changes on the front end of the
+
+documents section. So now if I click
+
+documents, brilliant. So we have the
+
+view of the root. So you can see the
+
+folders that are there also are here. We
+
+have the files that are sitting in the
+
+root. If you click add files, you get
+
+your upload files. Now we could have it
+
+where if you actually drag files in,
+
+it'll automatically drop them in, but we
+
+can do that again. And then if you click
+
+on the folders, it's a single click to
+
+go through. And then you can see these.
+
+Now we're still not seeing the metadata.
+
+So let's see what's going on there. The
+
+other thing is we're missing the root.
+
+And so here for example, that's the
+
+route. I click on folder one. I can't
+
+get back to the root. The breadcrumb
+
+trail doesn't have knowledge base
+
+essentially. So let's get that added.
+
+Okay. So that's making that change. And
+
+our plan 7 is currently executing as
+
+well. And so we're nearly finished. And
+
+phase 7 is complete. And interestingly,
+
+it's actually created a gap closure
+
+document. So during the verification
+
+process, it realized that it hasn't
+
+actually completed everything. And it
+
+asked me to trigger a plan phase where I
+
+pass in the gaps parameter, which is
+
+what I've done, and it identifies the
+
+gaps that are in the verification
+
+document, and it plans how to close
+
+those gaps. Cool. So, we're just
+
+verifying the gaps now. Uh, this is
+
+really interesting. at least it's
+
+actually understanding during a
+
+verification process that it's actually
+
+missing something and it's not just
+
+silently ignoring it. So that's a nice
+
+feature of the GSD framework. And while
+
+it's doing that, I've just carried out a
+
+little bit more testing. So we should
+
+have global folders and user folders,
+
+but there's nothing obvious to suggest
+
+that you can pick one over the other
+
+here. When we click new folder, you add
+
+a name. When you right click, you can't
+
+set it as global or kind of user
+
+restricted. I also logged in as a
+
+different user and I can see all of the
+
+folders of the other user. Now I can't
+
+see their files. So for example in
+
+folder two here there's three files for
+
+this account. Whereas if I log out and
+
+log in in a different account I can see
+
+their folders but I can't see the files.
+
+I'll just check this out with claude
+
+just to make sure that we're actually
+
+implementing access controls properly.
+
+And I'll use the GSD quick command for
+
+this as well, just because we definitely
+
+don't want Claude just trying to dive
+
+head first into one of the code files.
+
+We need to understand what the whole
+
+project is about. So, we could on board
+
+or we could use this GSD quick command.
+
+And just a little UI change as well. I
+
+might get Claude to trigger an LLM call
+
+to actually create a name for the
+
+threads cuz currently it's just
+
+providing the start of the first
+
+request. So, it's hard to know which
+
+query is which. Cool. So, phase seven is
+
+complete. So, let's verify. And we also
+
+have a command now to complete the
+
+milestone which is this entire phase of
+
+the project. So this is our sub agent
+
+verification. Let me just restart the
+
+server. Restart all. Okay. So spun up
+
+again. Can you trigger an explorer sub
+
+aent to summarize the knowledge base?
+
+Now we only have eight files but I just
+
+want to see what happens. And while
+
+that's working, let's go into lang.
+
+Great. So we can see that it has
+
+triggered the sub agent to explore
+
+knowledge base. Provide a comprehensive
+
+summary of the entire knowledge base. Oh
+
+look, this is definitely glitching.
+
+Okay, something definitely happened. Not
+
+what I was expecting, but let's see. So,
+
+it does seem to be calling tools based
+
+off this thread. If we check out
+
+Langsmith, we may have got caught in an
+
+infinite loop there. So, I think our
+
+maximum exploration rounds has saved us
+
+round eight of eight. So, this was the
+
+call I made. Can you trigger an explorer
+
+sub agent? And it did call it. So,
+
+that's good. And I pass the research
+
+query provide a comprehensive summary of
+
+the entire knowledge base, including the
+
+main folders and structure, types of
+
+documents present, key topics, themes
+
+covered. Okay, that's a good query
+
+actually for the question I asked. So
+
+then what happened? It's very difficult
+
+to actually tell what happened here
+
+because these are all separate traces.
+
+So I think I need to figure out how to
+
+actually nest the traces and I can
+
+actually follow it within a single log
+
+here. Yeah. So it looks like we need to
+
+pass the run context through into the
+
+sub calls and the tool calls. So they're
+
+all independent at the moment. Um, so
+
+I'll let Claude code try to figure this
+
+one out because it'll definitely make it
+
+easier for us to debug these nested sub
+
+aent calls. So we'll use the GSD debug
+
+and I'll just describe the issue. Okay,
+
+so that's running and it looks like the
+
+LLM generated thread names for the chat
+
+threads is complete. So let's test it
+
+out. Cool. So that has updated as you
+
+can see there. Another one off the list.
+
+Cool. So [snorts] it looks like the
+
+folder visibility bug has been fixed. So
+
+let's test that as well. If I go into
+
+documents so I can see mine and then if
+
+I log out and go into another account.
+
+Cool. Yeah, no folders yet. Now it does
+
+beg the question, how do you create
+
+global folders? And thinking about it,
+
+it would have to be top level folders.
+
+There's no point having a private folder
+
+and then underneath that is a global
+
+folder. Maybe when we rightclick the
+
+folder, we need to have a button to
+
+share globally. and then maybe the icons
+
+for the folders should be different so
+
+it's obvious which ones are global and
+
+which ones are kind of personal user
+
+folders. There's also a slight issue
+
+here where if you try to upload a file
+
+that has already been uploaded it kind
+
+of just silently fails. It doesn't
+
+explain this file already exists. So we
+
+just need feedback from the system. So
+
+here for example if I drop that in
+
+there's the upload and in the response
+
+we're getting action skipped. Whereas if
+
+we upload a file that hasn't been
+
+uploaded before yeah action created. So
+
+I'll get cloud code just to provide some
+
+feedback on that. Okay. So our global
+
+folder sharing should now work. Share
+
+with all. Ah very nice. So then the icon
+
+changes. Cool. Okay. So we have folder
+
+one which is shared and that has nested
+
+subfolders with files. So now if I log
+
+out and if I log in with the other
+
+account, go to documents. Cool. Now it's
+
+not sharing the subfolders. Yeah. So
+
+this sharing should cascade down
+
+essentially. It's amazing just what
+
+looks like a very small feature just the
+
+intricacies of it. So cascading of the
+
+sharing also like it's added this make
+
+private kind of feature so that you can
+
+reverse track if you share it globally
+
+you can change it to private. However
+
+I'm in the second test account here and
+
+technically if I make that private yeah
+
+it seems to be failing because this is
+
+not the owner of the folder. Yeah I'm
+
+getting a 500 error which is no
+
+surprise. So also only the owner of the
+
+folder should be allowed to share
+
+globally and make private. Okay, that's
+
+looking good from that perspective. I
+
+think because I made it private on the
+
+other account, I might have messed up
+
+the database. Let's have a look. So
+
+table editor folders. This was folder
+
+one, wasn't it? No parent ID. Yeah, the
+
+user ID has actually been reset because
+
+of that error. So yeah, I might just
+
+manually set that. And now if I try
+
+share with all make private. Oh no, it
+
+doesn't actually work. It's just
+
+deleting the user ID to make it global.
+
+I think we need a flag or something.
+
+That's not a good solution. So my three
+
+tabs are finished here. I'm just going
+
+to restart the back end and the front
+
+end. And we have a test folder here with
+
+just one file and no subfolders. Let's
+
+test that. So we just rightclick share
+
+with all. So that has worked. If we come
+
+in here and refresh, the user ID is
+
+gone, but the shared by has shown up
+
+here. That's worked. And then we will
+
+make private. Excellent. Yeah, that has
+
+worked. So then let's just share with
+
+all. Okay. So I can now see the folder,
+
+but I can't see the files. Yeah, I
+
+possibly should have gone back to create
+
+a full plan for this because I'm kind of
+
+just firefighting it issue by issue now,
+
+which is not really where you want to
+
+be. Okay, so hopefully this has fixed
+
+it. This should rebuild itself. And
+
+there we go. Yeah, we can now see the
+
+file. And just out of curiosity, let's
+
+just make sure that the agent can
+
+actually see it with its tool call. Show
+
+me the full knowledge base tree. Yeah.
+
+So, what we now see on this is different
+
+to what the agent can see. This tool
+
+call is not actually reflecting the
+
+user's permissions. It's able to see
+
+documents that are in the other user's
+
+account. Okay, let's see going to figure
+
+that out. I really should have gone back
+
+to a plan here cuz right now I'm just
+
+picking up bugs with end toend testing.
+
+My fear is that it's just making
+
+isolated changes and it doesn't have the
+
+full visibility on what it's supposed to
+
+be doing. And in fairness, this was
+
+documented in the plans. Um, it might
+
+not have just fleshed it out enough. It
+
+did reference global and user style
+
+folders, but it clearly didn't go into
+
+the level of due diligence here around
+
+the the tests that would need to happen.
+
+Maybe in the next video we need to move
+
+to a more testdriven development style
+
+scenario where we're creating the tests
+
+up front and verifying against those
+
+tests. So, while it figures out that
+
+access control issue, let's now check
+
+Langmith to see can we see the nested
+
+tool calls within the trace. So, we'll
+
+trigger the analyze document sub agent.
+
+So it's globbed to find the file. Now it
+
+has got an error. So that's not helpful.
+
+Okay, we are hitting an error here. But
+
+actually I just checked and we are
+
+getting um our full waterfall of traces.
+
+So we can see the chat request came in.
+
+It hit an LLM completion which then
+
+executed the tool call. So this will be
+
+a lot better now and will help us
+
+actually figure out where things are
+
+going wrong. So the first LLM call
+
+triggered the glob to find the files.
+
+The second one triggered the analyze
+
+document sub agent and then it's this
+
+sub agent analyze document tool call
+
+that returned this error. So we can now
+
+provide this error to claw code to
+
+figure out what's going on. Meanwhile,
+
+it looks like it has uh fixed up the
+
+access control issues or at least it
+
+claims it has. So let's try that again.
+
+Can you trigger the tree tool and give
+
+me the output? Excellent. PDF test and
+
+test PDF. That is all that's available.
+
+Beautiful. And if I do the same on the
+
+other account. Fabulous. There you go.
+
+We can get everything. Cool. So if I try
+
+to make this folder global. So share
+
+with all. Yeah, these are all showing as
+
+global now. And let me try the other
+
+account. Brilliant. And I can see the
+
+files. Excellent. Now, can this user
+
+Yeah, this user can't set it to private
+
+because they're not the owner. So then
+
+back out of there, back into here, make
+
+private. That has cascaded down. So this
+
+is now working pretty well. Cool. Cool.
+
+So, our global versus uh local user
+
+controls are working. Can you trigger
+
+the analyze document sub agent for a
+
+random document? So, it's found some
+
+documents. Okay, it's working actually.
+
+So, it has fixed it. And let's check
+
+Langsmith. Cool. Look at this. So, now
+
+we have a really nice hierarchical
+
+waterfall of all of the tool calls. So,
+
+first half we hit claude haiku trigger
+
+the tree command and then search
+
+documents was our vector search. Not
+
+exactly sure why it did that but then it
+
+triggered the analyze document which is
+
+our sub agent and then this is the sub
+
+aent. So you can see you are a document
+
+analysis specialist and it [snorts] has
+
+provided a summary of the document and
+
+then we're back to our main agent that
+
+basically gets all of that and outputs
+
+the response which is what we see on
+
+screen. That is really nice. So finally
+
+let's check our explorer sub aent which
+
+is why we're here. So can you trigger
+
+the explorer sub aent give me a summary
+
+of the knowledge base. Yeah, the problem
+
+here is this is not showing up in that
+
+really nice sub aent panel that we have
+
+in the other sub aent. So that's one
+
+problem. I think there are probably
+
+other problems but yeah it's just
+
+hallucinating some response here. Let's
+
+check out lang. So okay so this one hit
+
+the explorer knowledge base. It passed
+
+in the query provide a comprehensive
+
+overview of the entire knowledge base.
+
+Explore the folder structure etc. So
+
+then it hit the explorer agent which
+
+called the ls and tree tools in parallel
+
+it seems. However, they didn't respond
+
+with anything. So then it just tries it
+
+again and it tries it again and it tries
+
+it again and then it just hallucinates a
+
+response. So let's clear down one of
+
+these clawed sessions and let's just use
+
+this GSD debug again. Yeah. So our first
+
+issue is that the output is not
+
+appearing in the sub agent panel. Okay.
+
+It claims to have fixed it and it looked
+
+like Claude got a bit lazy. So
+
+supposedly the back end was working all
+
+the time and just they had placeholders
+
+on the front end. Let me just restart
+
+everything again. Okay. And let's see.
+
+So we're going to trigger our explore
+
+knowledge base. Okay. So it's now
+
+triggering the sub agent. So at least
+
+the panel is showing. And it does look
+
+like there was limitations. The
+
+directory listing and content GP command
+
+didn't return the specific folder names
+
+and document titles. Okay. So I think
+
+that fixes in. Let's test it out. Let's
+
+trigger our explorer sub agent. Okay,
+
+that's working much better. Yeah, we can
+
+see now a list of tools. It's reading
+
+the documents. That's really nice. I
+
+really like that. Yeah, brilliant. Yeah,
+
+there's our coding standards, our
+
+project architecture and onboarding
+
+checklist. And that is essentially what
+
+we have in here. So, this is our agenda
+
+project, our coding [snorts] standards.
+
+And if we have a look at lang. So this
+
+is the message and we can see all of the
+
+various tool calls of the sub aent the
+
+explorer agent and we are getting
+
+outputs as well. You can see the tool
+
+names. There's the tree. Brilliant. So
+
+it has all of that in context to
+
+actually generate the output which is
+
+then passed up the chain to the main
+
+agent. You can see the key documents as
+
+well. Cool. That works perfectly. I'm
+
+really happy with that. Obviously a lot
+
+more testing to do on it but I think we
+
+have an end to end here. So I think that
+
+brings us to a close this phase of the
+
+build. Um so we now have a fullyfledged
+
+document management system essentially
+
+with nested folder structures. We have
+
+the ability to share these folders and
+
+the files that are uploaded into those
+
+folders globally or keep them private.
+
+And then the chat interface, the AI
+
+agent is restricted to whatever folders
+
+and files it has available to them.
+
+Users can upload files as you can see
+
+there. We are using docklings a standard
+
+pipeline. We also can hook up the VLM if
+
+we want as well. But there is OCR built
+
+in. And then importantly within the AI
+
+agent, it has the ability to traverse
+
+the knowledge base. It can use tree. It
+
+can list the documents in the knowledge
+
+base as you see here. It's able to use
+
+the glob tool to find files based off
+
+the naming convention of the file
+
+itself. It's able to use the GP tool to
+
+find files that have specific text and
+
+patterns within them. So use gp to find
+
+let's say the dev team hashtag and that
+
+has picked out that from the onboarding
+
+checklist which I've confirmed here. So
+
+that's list tree gp glob and obviously
+
+it's then able to view these files. Can
+
+you show me this entire file and then it
+
+uses the read or the view to actually
+
+output the file itself. So we now have
+
+fullyfledged knowledgebased exploration
+
+alongside our semantic and hybrid
+
+search. So we really have the best of
+
+both worlds now in this application.
+
+Still obviously a lot of testing to do
+
+with this and clearly there was a lot of
+
+bugs that needed to be fixed and ironed
+
+out. And as for the GSD framework, there
+
+has definitely been some good aspects to
+
+it. I was really impressed with the
+
+brainstorming phases of the project at
+
+the start. It really fleshed out the
+
+requirements quite well. There's quite a
+
+logical structure to the artifacts. You
+
+can see the different phases and you can
+
+see how within those subfases it works
+
+through from research, plan, execute,
+
+summary and verification. Any of the
+
+debug commands that you run are
+
+documented as well. So I'm pretty happy
+
+with all of that. During the project, I
+
+was thinking it was going a little bit
+
+overboard in the amount of markdown
+
+files it was creating. I did have the
+
+option up front to use quick deployment
+
+instead of standard or thorough because
+
+on the face of it, I didn't think these
+
+were very complicated features to build.
+
+But looking at some of the issues that
+
+it actually missed, maybe the approach
+
+of using standard was actually correct.
+
+So it really is a balancing act. I was a
+
+little bit disappointed I couldn't
+
+figure out more ways to actually use
+
+parallel execution. It was quite
+
+sequential and then slow as a result,
+
+but at least it was quite thorough. I
+
+didn't use the discuss activities within
+
+the subfases and I pretty much stand
+
+over that probably with the exception of
+
+maybe missing some things around global
+
+versus user folders. But at a certain
+
+point, you can discuss it to death and
+
+you actually just need to get on with
+
+it. I was quite impressed as well with
+
+the gap analysis I carried out in phase
+
+7 and how it figured out actually that
+
+it was still missing some features and
+
+then there was another loop that we went
+
+through to actually close those gaps. So
+
+I thought that was a really nice
+
+feature. So as a framework, it's not
+
+perfect. It does provide some level of a
+
+structure though. If you are new to
+
+software development, it will definitely
+
+keep you on the rails. As for whether
+
+I'm going to continue to use this GSD
+
+framework on this project for future
+
+phases, honestly, I'm not too sure. I'm
+
+going to have a think about it, but in
+
+the meantime, let me know in the
+
+comments what you think. Would you like
+
+me to try out a different framework or a
+
+different approach to build out the next
+
+phase? Before we finish up, I'm just
+
+going to commit all of these changes to
+
+our feature branch, push it up to
+
+GitHub, and then after a bit more
+
+testing, I'll merge it into our master
+
+branch. I hope you enjoyed the build. If
+
+you want to learn more about hybrid
+
+retrieval, not just exploring a
+
+knowledge base, but using other
+
+mechanisms like knowledge graphs,
+
+structured databases, and more, then
+
+check out this video here on hybrid
+
+retrieval. Thanks so much for watching
+
+and I'll see you in the next
+
+
