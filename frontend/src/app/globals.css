@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* =========================================================
+   Light Mode Tokens (ui.md Section 7)
+   ========================================================= */
+:root,
+[data-theme="light"] {
+  --color-bg-page: #F8FAFC;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-muted: #F1F5F9;
+  --color-bg-subtle: #E2E8F0;
+  --color-bg-accent: #CCFBF1;
+  --color-bg-accent-hover: #99F6E4;
+
+  --color-border-base: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-border-accent: #5EEAD4;
+  --color-border-error: #FCA5A5;
+
+  --color-text-primary: #1E293B;
+  --color-text-body: #334155;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-text-disabled: #CBD5E1;
+  --color-text-accent: #0D9488;
+  --color-text-inverse: #FFFFFF;
+
+  --color-accent: #14B8A6;
+  --color-accent-hover: #2DD4BF;
+  --color-accent-active: #0D9488;
+  --color-accent-subtle: #F0FDFA;
+
+  --color-success: #16A34A;
+  --color-success-bg: #F0FDF4;
+  --color-success-border: #BBF7D0;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-warning-border: #FDE68A;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-error-border: #FECACA;
+  --color-info: #2563EB;
+  --color-info-bg: #EFF6FF;
+  --color-info-border: #BFDBFE;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+/* =========================================================
+   Dark Mode Tokens (ui.md Section 8 — NOT an inversion)
+   ========================================================= */
+[data-theme="dark"] {
+  --color-bg-page: #0F172A;
+  --color-bg-surface: #1E293B;
+  --color-bg-muted: #0F172A;
+  --color-bg-subtle: #293548;
+  --color-bg-accent: #0D2E2B;
+  --color-bg-accent-hover: #134E4A;
+
+  --color-border-base: #334155;
+  --color-border-strong: #475569;
+  --color-border-accent: #0F766E;
+  --color-border-error: #991B1B;
+
+  --color-text-primary: #F1F5F9;
+  --color-text-body: #CBD5E1;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-text-disabled: #475569;
+  --color-text-accent: #2DD4BF;
+  --color-text-inverse: #0F172A;
+
+  --color-accent: #2DD4BF;
+  --color-accent-hover: #5EEAD4;
+  --color-accent-active: #14B8A6;
+  --color-accent-subtle: #042f2e;
+
+  --color-success: #22C55E;
+  --color-success-bg: #052E16;
+  --color-success-border: #166534;
+  --color-warning: #F59E0B;
+  --color-warning-bg: #2D1B00;
+  --color-warning-border: #92400E;
+  --color-error: #EF4444;
+  --color-error-bg: #2D0A0A;
+  --color-error-border: #991B1B;
+  --color-info: #60A5FA;
+  --color-info-bg: #0D1F3D;
+  --color-info-border: #1E40AF;
+
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================
+   Base Styles
+   ========================================================= */
+html,
+body {
+  background-color: var(--color-bg-page);
+  color: var(--color-text-body);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--color-text-primary);
+}
+
+code,
+pre,
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* =========================================================
+   Scrollbar Styling
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* =========================================================
+   Focus Ring (ui.md Section 14.2)
+   ========================================================= */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   Animations (ui.md Section 16.6)
+   ========================================================= */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+      var(--color-bg-muted) 25%,
+      var(--color-bg-subtle) 50%,
+      var(--color-bg-muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 200ms ease-out forwards;
+}
+
+/* Respect reduced motion (ui.md Section 16.6) */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   Utility Classes
+   ========================================================= */
+.surface {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-base);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-base);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+}
+
+/* Insight card left-border variants (ui.md Section 9.1) */
+.card-insight {
+  border-left: 3px solid var(--color-accent);
+}
+
+.card-warning {
+  border-left: 3px solid var(--color-warning);
+}
+
+.card-recommendation {
+  border-left: 3px solid var(--color-info);
+}
+
+.card-error {
+  border-left: 3px solid var(--color-error);
+}
+
+/* =========================================================
+   Browser Reset Overrides (Autofill)
+   ========================================================= */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 50px var(--color-bg-muted) inset !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
