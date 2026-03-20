@@ -37,6 +37,13 @@ class LLMRouter:
         genai.configure(api_key=settings.gemini_api_key)
         self._groq_client = AsyncGroq(api_key=settings.groq_api_key)
 
+    @staticmethod
+    def _runtime_get(runtime, key: str):
+        """Read runtime setting from either dict (current) or object (legacy)."""
+        if isinstance(runtime, dict):
+            return runtime.get(key)
+        return getattr(runtime, key, None)
+
     async def call(
         self, prompt: str, session_id: str
     ) -> tuple[str, str]:
@@ -61,29 +68,31 @@ class LLMRouter:
         self, prompt: str, session_id: str, runtime
     ) -> str | None:
         """Call Gemini with the configured timeout. Returns None on any failure."""
-        if not runtime.gemini_enabled:
+        if not self._runtime_get(runtime, "gemini_enabled"):
             return None
 
         model = genai.GenerativeModel(
-            model_name=runtime.gemini_model,
+            model_name=self._runtime_get(runtime, "gemini_model"),
             generation_config={
-                "temperature": runtime.gemini_temperature,
-                "max_output_tokens": runtime.gemini_max_output_tokens,
-                "top_p": runtime.top_p,
+                "temperature": self._runtime_get(runtime, "gemini_temperature"),
+                "max_output_tokens": self._runtime_get(runtime, "gemini_max_output_tokens"),
+                "top_p": self._runtime_get(runtime, "top_p"),
                 "response_mime_type": "application/json",
             },
         )
 
+        timeout_seconds = int(self._runtime_get(runtime, "llm_timeout_seconds"))
+
         try:
             response = await asyncio.wait_for(
                 model.generate_content_async(prompt),
-                timeout=runtime.llm_timeout_seconds,
+                timeout=timeout_seconds,
             )
             return response.text
 
         except asyncio.TimeoutError:
             logger.error(
-                "Gemini timeout after %ds (session=%s)", runtime.llm_timeout_seconds, session_id
+                "Gemini timeout after %ds (session=%s)", timeout_seconds, session_id
             )
             return None  # Immediately fall to Groq (PRD 11.2)
 
@@ -105,7 +114,7 @@ class LLMRouter:
                 try:
                     response = await asyncio.wait_for(
                         model.generate_content_async(prompt),
-                        timeout=runtime.llm_timeout_seconds,
+                        timeout=timeout_seconds,
                     )
                     return response.text
                 except Exception as retry_exc:
@@ -126,27 +135,29 @@ class LLMRouter:
         self, prompt: str, session_id: str, runtime
     ) -> str | None:
         """Call Groq with the configured timeout. Returns None on failure."""
-        if not runtime.groq_enabled:
+        if not self._runtime_get(runtime, "groq_enabled"):
             return None
+
+        timeout_seconds = int(self._runtime_get(runtime, "llm_timeout_seconds"))
 
         try:
             response = await asyncio.wait_for(
                 self._groq_client.chat.completions.create(
-                    model=runtime.groq_model,
+                    model=self._runtime_get(runtime, "groq_model"),
                     messages=[{"role": "user", "content": prompt}],
-                    temperature=runtime.groq_temperature,
-                    max_tokens=runtime.groq_max_tokens,
-                    top_p=runtime.top_p,
+                    temperature=self._runtime_get(runtime, "groq_temperature"),
+                    max_tokens=self._runtime_get(runtime, "groq_max_tokens"),
+                    top_p=self._runtime_get(runtime, "top_p"),
                     response_format={"type": "json_object"},
                 ),
-                timeout=runtime.llm_timeout_seconds,
+                timeout=timeout_seconds,
             )
             content = response.choices[0].message.content
             return content
 
         except asyncio.TimeoutError:
             logger.error(
-                "Groq timeout after %ds (session=%s)", runtime.llm_timeout_seconds, session_id
+                "Groq timeout after %ds (session=%s)", timeout_seconds, session_id
             )
             return None
 
@@ -157,13 +168,13 @@ class LLMRouter:
             try:
                 response = await asyncio.wait_for(
                     self._groq_client.chat.completions.create(
-                        model=runtime.groq_model,
+                        model=self._runtime_get(runtime, "groq_model"),
                         messages=[{"role": "user", "content": prompt}],
-                        temperature=runtime.groq_temperature,
-                        max_tokens=runtime.groq_max_tokens,
-                        top_p=runtime.top_p,
+                        temperature=self._runtime_get(runtime, "groq_temperature"),
+                        max_tokens=self._runtime_get(runtime, "groq_max_tokens"),
+                        top_p=self._runtime_get(runtime, "top_p"),
                     ),
-                    timeout=runtime.llm_timeout_seconds,
+                    timeout=timeout_seconds,
                 )
                 return response.choices[0].message.content
             except Exception as retry_exc:
