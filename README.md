@@ -175,7 +175,7 @@ Frontend auth handler route:
 4. Upload a compatible file.
 5. Submit queries and review structured responses.
 6. Use chart panel for finance responses.
-7. Use Settings modal to adjust runtime model controls.
+7. Use Settings modal to adjust runtime model controls
 
 ## Deployment
 - No deployment manifest is included in this repository.
