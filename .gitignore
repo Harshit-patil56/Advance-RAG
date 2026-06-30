@@ -63,3 +63,5 @@ pnpm-debug.log*
 # Keep if you want to avoid committing local generated files
 # ------------------------------
 backend/err.txt
+sample_*.csv
+
